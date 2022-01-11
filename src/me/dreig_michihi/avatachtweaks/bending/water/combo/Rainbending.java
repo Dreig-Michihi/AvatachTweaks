@@ -71,8 +71,6 @@ public class Rainbending extends WaterAbility implements AddonAbility, ComboAbil
 
     public Rainbending(Player player) {
         super(player);
-        if(!bPlayer.canBend(this))
-            return;
         if(CoreAbility.hasAbility(player, Rainbending.class)) {
             return;
         }
@@ -647,17 +645,18 @@ public class Rainbending extends WaterAbility implements AddonAbility, ComboAbil
                     getConfig().getDouble(TweaksConfig.getConfigPath(this,"HealingWaters.ChargeAmount")),
                     getConfig().getDouble(TweaksConfig.getConfigPath(this,"PhaseChange.ChargeAmount"))
         })));
-        this.perm = new Permission("bending.ability.Rainbending");
-        this.perm.setDefault(PermissionDefault.TRUE);
         TweaksConfig.saveDefaultConfig();
         TweaksConfig.saveLanguageConfig();
         ListenerManager.Register();
+        this.perm = new Permission("bending.ability.Rainbending");
+        this.perm.setDefault(PermissionDefault.TRUE);
         TweaksInfo.loadLog(this);
     }
 
     @Override
     public void stop() {
         ListenerManager.Unregister();
+        ProjectKorra.plugin.getServer().getPluginManager().removePermission(this.perm);
         this.remove();
         TweaksInfo.stopLog(this);
     }

@@ -2,6 +2,7 @@ package me.dreig_michihi.avatachtweaks.bending.water.combo;
 
 import com.projectkorra.projectkorra.Element;
 import com.projectkorra.projectkorra.GeneralMethods;
+import com.projectkorra.projectkorra.ProjectKorra;
 import com.projectkorra.projectkorra.ability.*;
 import com.projectkorra.projectkorra.ability.util.ComboManager;
 import com.projectkorra.projectkorra.attribute.Attribute;
@@ -53,8 +54,6 @@ public class IcyClaws extends IceAbility implements AddonAbility, ComboAbility {
 
     public IcyClaws(Player player, ArrayList<Vector> directions) {
         super(player);
-        if(!bPlayer.canBend(this))
-            return;
         //player.sendMessage("IcyClaws!");
         if(CoreAbility.hasAbility(player, IcyClaws.class)) {
             return;
@@ -217,17 +216,18 @@ public class IcyClaws extends IceAbility implements AddonAbility, ComboAbility {
                 "Collect water from the air to create sharp icy claws that you can throw at enemies as Hama did!");
         TweaksConfig.addLanguage(this,"Instructions",
                 "Return to \"PhaseChange\" while casting Rainbending combo and activate it.");
-        this.perm = new Permission("bending.ability.IcyClaws");
-        this.perm.setDefault(PermissionDefault.TRUE);
         TweaksConfig.saveDefaultConfig();
         TweaksConfig.saveLanguageConfig();
+        this.perm = new Permission("bending.ability.IcyClaws");
+        this.perm.setDefault(PermissionDefault.TRUE);
         TweaksInfo.loadLog(this);
     }
 
     @Override
     public void stop() {
-        this.remove();
+        ProjectKorra.plugin.getServer().getPluginManager().removePermission(this.perm);
         TweaksInfo.stopLog(this);
+        this.remove();
     }
 
     @Override
