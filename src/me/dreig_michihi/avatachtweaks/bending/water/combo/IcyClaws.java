@@ -22,6 +22,8 @@ import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.util.Vector;
 
 import java.util.*;
@@ -42,6 +44,7 @@ public class IcyClaws extends IceAbility implements AddonAbility, ComboAbility {
     private double gravity;
     @Attribute("Cooldown")
     private long cooldown=getConfig().getLong(TweaksConfig.getConfigPath(this,"Cooldown"));
+    private Permission perm;
 
     public IcyClaws(Player player){
         super(player);
@@ -50,6 +53,8 @@ public class IcyClaws extends IceAbility implements AddonAbility, ComboAbility {
 
     public IcyClaws(Player player, ArrayList<Vector> directions) {
         super(player);
+        if(!bPlayer.canBend(this))
+            return;
         //player.sendMessage("IcyClaws!");
         if(CoreAbility.hasAbility(player, IcyClaws.class)) {
             return;
@@ -212,6 +217,8 @@ public class IcyClaws extends IceAbility implements AddonAbility, ComboAbility {
                 "Collect water from the air to create sharp icy claws that you can throw at enemies as Hama did!");
         TweaksConfig.addLanguage(this,"Instructions",
                 "Return to \"PhaseChange\" while casting Rainbending combo and activate it.");
+        this.perm = new Permission("bending.ability.IcyClaws");
+        this.perm.setDefault(PermissionDefault.TRUE);
         TweaksConfig.saveDefaultConfig();
         TweaksConfig.saveLanguageConfig();
         TweaksInfo.loadLog(this);

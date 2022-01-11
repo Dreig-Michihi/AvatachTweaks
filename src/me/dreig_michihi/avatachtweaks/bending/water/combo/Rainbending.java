@@ -24,6 +24,8 @@ import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
@@ -65,9 +67,12 @@ public class Rainbending extends WaterAbility implements AddonAbility, ComboAbil
     private static int waterParticles;
     private static double maxChargeForParticles;
     private static boolean drainingOnOriginMoveParticles;
+    private Permission perm;
 
     public Rainbending(Player player) {
         super(player);
+        if(!bPlayer.canBend(this))
+            return;
         if(CoreAbility.hasAbility(player, Rainbending.class)) {
             return;
         }
@@ -427,7 +432,7 @@ public class Rainbending extends WaterAbility implements AddonAbility, ComboAbil
                 case ("WaterArms"):
                 case ("HealingWaters"):
                 case ("PhaseChange"):
-                    if (isAbilityEnabled(chosenAbility)) {
+                    if (isAbilityEnabled(chosenAbility)&&bPlayer.canBend(getAbility(chosenAbility))) {
                         if (chosenAbility.equals("PhaseChange")&&
                         Math.random()<0.25)
                             IceAbility.playIcebendingSound(this.origin);
@@ -642,6 +647,8 @@ public class Rainbending extends WaterAbility implements AddonAbility, ComboAbil
                     getConfig().getDouble(TweaksConfig.getConfigPath(this,"HealingWaters.ChargeAmount")),
                     getConfig().getDouble(TweaksConfig.getConfigPath(this,"PhaseChange.ChargeAmount"))
         })));
+        this.perm = new Permission("bending.ability.Rainbending");
+        this.perm.setDefault(PermissionDefault.TRUE);
         TweaksConfig.saveDefaultConfig();
         TweaksConfig.saveLanguageConfig();
         ListenerManager.Register();
