@@ -430,7 +430,7 @@ public class Rainbending extends WaterAbility implements AddonAbility, ComboAbil
                 case ("WaterArms"):
                 case ("HealingWaters"):
                 case ("PhaseChange"):
-                    if (isAbilityEnabled(chosenAbility)&&bPlayer.canBend(getAbility(chosenAbility))) {
+                    if (isAbilityEnabled(chosenAbility)) {
                         if (chosenAbility.equals("PhaseChange")&&
                         Math.random()<0.25)
                             IceAbility.playIcebendingSound(this.origin);
