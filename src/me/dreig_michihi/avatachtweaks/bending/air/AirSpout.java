@@ -243,6 +243,7 @@ public class AirSpout extends AirAbility implements AddonAbility {
 	}
 	@Override
 	public void remove() {
+		this.removeFlight();
 		super.remove();
 		this.staminaBar.removeAll();
 		for(Location loc:this.particlesLocations){
