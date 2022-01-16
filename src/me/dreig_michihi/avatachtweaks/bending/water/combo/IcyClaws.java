@@ -1,21 +1,19 @@
 package me.dreig_michihi.avatachtweaks.bending.water.combo;
 
-import com.projectkorra.projectkorra.Element;
 import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ProjectKorra;
 import com.projectkorra.projectkorra.ability.*;
 import com.projectkorra.projectkorra.ability.util.ComboManager;
 import com.projectkorra.projectkorra.attribute.Attribute;
-import com.projectkorra.projectkorra.avatar.AvatarState;
 import com.projectkorra.projectkorra.command.Commands;
 import com.projectkorra.projectkorra.configuration.ConfigManager;
-import com.projectkorra.projectkorra.firebending.util.FireDamageTimer;
 import com.projectkorra.projectkorra.util.ClickType;
 import com.projectkorra.projectkorra.util.DamageHandler;
 import com.projectkorra.projectkorra.util.ParticleEffect;
 import me.dreig_michihi.avatachtweaks.TweaksConfig;
 import me.dreig_michihi.avatachtweaks.TweaksGeneralMethods;
 import me.dreig_michihi.avatachtweaks.TweaksInfo;
+import me.dreig_michihi.avatachtweaks.listener.TweaksListener;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -25,15 +23,18 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class IcyClaws extends IceAbility implements AddonAbility, ComboAbility {
 
     private ArrayList<Location> clawsLoc;
     private ArrayList<Vector> clawsDir;
+    public static Set<Entity> frozenEntities = new HashSet<>();
     @Attribute("Damage")
     private double damage;
     @Attribute("Speed")
@@ -46,6 +47,8 @@ public class IcyClaws extends IceAbility implements AddonAbility, ComboAbility {
     @Attribute("Cooldown")
     private long cooldown=getConfig().getLong(TweaksConfig.getConfigPath(this,"Cooldown"));
     private Permission perm;
+    private int slowDuration;
+    private int slowAmplifier;
 
     public IcyClaws(Player player){
         super(player);
@@ -74,6 +77,8 @@ public class IcyClaws extends IceAbility implements AddonAbility, ComboAbility {
         this.radius = getConfig().getDouble(TweaksConfig.getConfigPath(this,"CollisionRadius"));
         this.range = getConfig().getDouble(TweaksConfig.getConfigPath(this,"Range"));
         this.gravity = getConfig().getDouble(TweaksConfig.getConfigPath(this,"Gravity"));
+        this.slowDuration = getConfig().getInt(TweaksConfig.getConfigPath(this,"SlowDuration"));
+        this.slowAmplifier = getConfig().getInt(TweaksConfig.getConfigPath(this,"SlowAmplifier"));
         //this.range = 15;
         for(Vector direction:directions)
             clawsLoc.add(this.player.getEyeLocation()
@@ -114,14 +119,34 @@ public class IcyClaws extends IceAbility implements AddonAbility, ComboAbility {
                             if (!(entity.getUniqueId() != this.player.getUniqueId()
                                     && !GeneralMethods.isRegionProtectedFromBuild(this, entity.getLocation())
                                     && !((entity instanceof Player)
-                                    && Commands.invincible.contains(((Player) entity).getName()))))
+                                    && Commands.invincible.contains(entity.getName()))))
                                 entity = null;
                         if (clawsLoc.get(i).distanceSquared(this.player.getEyeLocation()) > this.range * this.range
                                 || GeneralMethods.isSolid(clawsLoc.get(i).getBlock())
-                                || entity != null) {
-                            if (entity != null)
+                                || entity instanceof LivingEntity) {
+                            //if (entity != null)
                                 if (entity instanceof LivingEntity) {
                                     entity.setFireTicks(0);
+                                    if(((LivingEntity) entity).hasPotionEffect(PotionEffectType.SLOW))
+                                        ((LivingEntity) entity).removePotionEffect(PotionEffectType.SLOW);
+                                    ((LivingEntity) entity).addPotionEffect(new PotionEffect(PotionEffectType.SLOW, (int) (slowDuration*0.02),slowAmplifier));
+                                    if(!TweaksListener.serverVersion16
+                                            &&entity instanceof Player&&!frozenEntities.contains(entity)) {
+                                        Player finalEntity = (Player) entity;
+                                        frozenEntities.add(finalEntity);
+                                        new BukkitRunnable(){
+                                            @Override
+                                            public void run() {
+                                                if (!finalEntity.isDead() && finalEntity.isOnline()
+                                                        && finalEntity.hasPotionEffect(PotionEffectType.SLOW)) {
+                                                    finalEntity.setFreezeTicks(Math.min(141,finalEntity.getFreezeTicks()+14));
+                                                } else {
+                                                    frozenEntities.remove(finalEntity);
+                                                    this.cancel();
+                                                }
+                                            }
+                                        }.runTaskTimer(ProjectKorra.plugin,0L,1L);
+                                    }
                                     DamageHandler.damageEntity(entity, this.damage, this);
                                     ((LivingEntity) entity).setNoDamageTicks(0);
                                     AirAbility.breakBreathbendingHold(entity);
@@ -212,6 +237,8 @@ public class IcyClaws extends IceAbility implements AddonAbility, ComboAbility {
         TweaksConfig.addDefault(this,"Range", 40);
         TweaksConfig.addDefault(this,"Gravity", 0.03);
         TweaksConfig.addDefault(this, "Cooldown",5000);
+        TweaksConfig.addDefault(this, "SlowDuration",4000);
+        TweaksConfig.addDefault(this, "SlowAmplifier",2);
         TweaksConfig.addLanguage(this,"Description",
                 "Collect water from the air to create sharp icy claws that you can throw at enemies as Hama did!");
         TweaksConfig.addLanguage(this,"Instructions",

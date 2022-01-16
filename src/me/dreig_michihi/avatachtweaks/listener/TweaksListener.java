@@ -6,23 +6,16 @@ import com.projectkorra.projectkorra.ProjectKorra;
 import com.projectkorra.projectkorra.ability.AirAbility;
 import com.projectkorra.projectkorra.ability.CoreAbility;
 import com.projectkorra.projectkorra.ability.WaterAbility;
-import com.projectkorra.projectkorra.event.AbilityStartEvent;
-import com.projectkorra.projectkorra.waterbending.*;
-import com.projectkorra.projectkorra.waterbending.combo.IceBullet;
-import com.projectkorra.projectkorra.waterbending.ice.IceBlast;
-import com.projectkorra.projectkorra.waterbending.ice.IceSpikeBlast;
-import com.projectkorra.projectkorra.waterbending.multiabilities.WaterArms;
 import me.dreig_michihi.avatachtweaks.bending.air.AirBlast;
 import me.dreig_michihi.avatachtweaks.bending.air.AirSpout;
 import me.dreig_michihi.avatachtweaks.bending.air.AirSuction;
+import me.dreig_michihi.avatachtweaks.bending.water.combo.IcyClaws;
 import me.dreig_michihi.avatachtweaks.bending.water.combo.Rainbending;
-import org.bukkit.Material;
-import org.bukkit.Server;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
@@ -204,5 +197,12 @@ public class TweaksListener implements Listener {
             }
         }*/
     }
-
+    @EventHandler
+    public void onPlayerDamage(final EntityDamageEvent event){
+        if(!TweaksListener.serverVersion16){
+            if(event.getCause().equals(EntityDamageEvent.DamageCause.FREEZE)
+                    &&IcyClaws.frozenEntities.contains(event.getEntity()))
+                event.setCancelled(true);
+        }
+    }
 }
