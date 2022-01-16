@@ -18,6 +18,7 @@ import me.dreig_michihi.avatachtweaks.TweaksConfig;
 import me.dreig_michihi.avatachtweaks.TweaksGeneralMethods;
 import me.dreig_michihi.avatachtweaks.TweaksInfo;
 import me.dreig_michihi.avatachtweaks.listener.ListenerManager;
+import me.dreig_michihi.avatachtweaks.listener.TweaksListener;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.boss.BarColor;
@@ -493,9 +494,10 @@ public class Rainbending extends WaterAbility implements AddonAbility, ComboAbil
                                         ThreadLocalRandom.current().nextDouble(-0.5, 0.5),
                                         ThreadLocalRandom.current().nextDouble(-0.5, 0.5));
                         Vector toOrigin = origin.clone().subtract(raindropLoc).toVector().normalize();
-                        if (ElementalAbility.isAir(b.getType()) && b.getTemperature() < 0.15 && ThreadLocalRandom.current().nextBoolean())
-                            player.getWorld().spawnParticle(Particle.SNOWFLAKE, raindropLoc, 0,
-                                    toOrigin.getX(), toOrigin.getY(), toOrigin.getZ(), 0.1);
+                        if (!TweaksListener.serverVersion16)
+                            if (ElementalAbility.isAir(b.getType()) && b.getTemperature() < 0.15 && ThreadLocalRandom.current().nextBoolean())
+                                player.getWorld().spawnParticle(Particle.SNOWFLAKE, raindropLoc, 0,
+                                        toOrigin.getX(), toOrigin.getY(), toOrigin.getZ(), 0.1);
                         ParticleEffect.WATER_WAKE.display(raindropLoc, 0,
                                 toOrigin.getX(), toOrigin.getY(), toOrigin.getZ(), 0.2);
                         this.chargeCount += coverageEachBlockContribution;

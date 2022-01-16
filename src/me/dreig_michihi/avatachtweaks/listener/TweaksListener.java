@@ -31,8 +31,10 @@ import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.util.Vector;
 import timingslib.projectkorra.MCTiming;
 
-public class TweaksListener implements Listener {
+import java.util.Objects;
 
+public class TweaksListener implements Listener {
+    public static boolean serverVersion16 = ProjectKorra.plugin.getServer().getVersion().contains("1.16");
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerSneak(final PlayerToggleSneakEvent event) {
@@ -104,7 +106,7 @@ public class TweaksListener implements Listener {
     public void onPlayerMove(final PlayerMoveEvent event) {
         final Player player = event.getPlayer();
         final BendingPlayer bPlayer = BendingPlayer.getBendingPlayer(player);
-        if (event.getTo().getX() == event.getFrom().getX() && event.getTo().getY() == event.getFrom().getY() && event.getTo().getZ() == event.getFrom().getZ()) {
+        if (Objects.requireNonNull(event.getTo()).getX() == event.getFrom().getX() && event.getTo().getY() == event.getFrom().getY() && event.getTo().getZ() == event.getFrom().getZ()) {
             return;
         }
         try (MCTiming timing = ProjectKorra.timing("PlayerMoveSpoutCheck").startTiming()) {
@@ -121,7 +123,7 @@ public class TweaksListener implements Listener {
                     // apply the new velocity
                     event.getPlayer().setVelocity(vel);
                 }
-                return;
+                //return;
             }
         }
     }
