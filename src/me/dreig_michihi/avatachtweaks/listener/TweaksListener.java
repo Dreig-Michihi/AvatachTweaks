@@ -2,25 +2,38 @@ package me.dreig_michihi.avatachtweaks.listener;
 
 import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.Element;
+import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ProjectKorra;
 import com.projectkorra.projectkorra.ability.AirAbility;
 import com.projectkorra.projectkorra.ability.CoreAbility;
+import com.projectkorra.projectkorra.ability.FireAbility;
 import com.projectkorra.projectkorra.ability.WaterAbility;
+import com.projectkorra.projectkorra.configuration.ConfigManager;
+import com.projectkorra.projectkorra.util.TempBlock;
 import me.dreig_michihi.avatachtweaks.bending.air.AirBlast;
 import me.dreig_michihi.avatachtweaks.bending.air.AirSpout;
 import me.dreig_michihi.avatachtweaks.bending.air.AirSuction;
+import me.dreig_michihi.avatachtweaks.bending.fire.Combustion;
 import me.dreig_michihi.avatachtweaks.bending.water.combo.IcyClaws;
 import me.dreig_michihi.avatachtweaks.bending.water.combo.Rainbending;
+import me.dreig_michihi.avatachtweaks.util.TempFallingBlock;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityChangeBlockEvent;
+import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import timingslib.projectkorra.MCTiming;
 
@@ -28,6 +41,9 @@ import java.util.Objects;
 
 public class TweaksListener implements Listener {
     public static boolean serverVersion16 = ProjectKorra.plugin.getServer().getVersion().contains("1.16");
+    private static double damageMod = ConfigManager.getConfig().getDouble("ExtraAbilities.Dreig_Michihi.AvatachTweaks.Earth.LavaDamageModifier");
+    private static double lavaTicksMod = ConfigManager.getConfig().getDouble("ExtraAbilities.Dreig_Michihi.AvatachTweaks.Earth.LavaTicksModifier");
+
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerSneak(final PlayerToggleSneakEvent event) {
@@ -50,6 +66,12 @@ public class TweaksListener implements Listener {
                     } else if (abil.equalsIgnoreCase("AirSuction")) {
                         new AirSuction(player);
                     }
+                }
+            }
+            if (coreAbil instanceof FireAbility && bPlayer.isElementToggled(Element.COMBUSTION)) {
+                if (abil.equalsIgnoreCase("Combustion")) {
+                    if (!player.isSneaking())
+                        new Combustion(player);
                 }
             }
         }
@@ -86,13 +108,83 @@ public class TweaksListener implements Listener {
 
             if (coreAbil instanceof WaterAbility && bPlayer.isElementToggled(Element.WATER)) {
                 if (bPlayer.canCurrentlyBendWithWeapons()) {
-                    if(CoreAbility.hasAbility(player, Rainbending.class)){
+                    if (CoreAbility.hasAbility(player, Rainbending.class)) {
                         CoreAbility.getAbility(player, Rainbending.class).doLeftClick();
                     }
                 }
             }
         }
 
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void EntityChangeBlockEvent(EntityChangeBlockEvent event) {
+        if (event.getEntityType() == EntityType.FALLING_BLOCK) {
+            FallingBlock fb = (FallingBlock) event.getEntity();
+            if (TempFallingBlock.isTempFallingBlock(fb)) {
+                TempFallingBlock tfb = TempFallingBlock.get(fb);
+                assert tfb != null;
+                if (tfb.getAbility() instanceof Combustion) {
+                    tfb.remove();
+                    event.setCancelled(true);
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void stopLava(EntityDamageEvent event) {
+
+        if (! (event.getEntity() instanceof Player)) {
+            return;
+        }
+
+        Player player = (Player) event.getEntity();
+
+        if (event.getCause().equals(EntityDamageEvent.DamageCause.LAVA)){
+            boolean lava = false;
+            for (Block b : GeneralMethods.getBlocksAroundPoint(player.getLocation(), 2)) {
+                if (TempBlock.isTempBlock(b)&&b.getType()== Material.LAVA) {
+                    lava = true;
+                }
+            }
+            if (lava) {
+                event.setDamage(event.getDamage()*damageMod);
+                new BukkitRunnable(){
+                    @Override
+                    public void run() {
+                        int before = player.getFireTicks();
+                        player.setFireTicks(0);
+                        player.setFireTicks((int)(before*lavaTicksMod));
+                    }
+                }.runTaskLater(ProjectKorra.plugin,5);
+            }
+        }
+    }
+    @EventHandler
+    public void stopLavaBurn(EntityCombustEvent event) {
+        if (! (event.getEntity() instanceof Player)) {
+            return;
+        }
+
+        Player player = (Player) event.getEntity();
+
+        Boolean lava = false;
+        for (Block b : GeneralMethods.getBlocksAroundPoint(player.getLocation(), 2)) {
+            if (TempBlock.isTempBlock(b)&&b.getType()==Material.LAVA) {
+                lava = true;
+            }
+        }
+        if (lava) {
+            new BukkitRunnable(){
+            @Override
+            public void run() {
+                int before = player.getFireTicks();
+                player.setFireTicks(0);
+                player.setFireTicks((int)(before*lavaTicksMod));
+            }
+        }.runTaskLater(ProjectKorra.plugin,1);
+        }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -153,6 +245,7 @@ public class TweaksListener implements Listener {
     }*/
 
     private static boolean loopFix = false;
+
     @EventHandler
     public void onWeatherChange(final WeatherChangeEvent event) {
         /*for (Player p : ProjectKorra.plugin.getServer().getOnlinePlayers()) {
@@ -175,6 +268,7 @@ public class TweaksListener implements Listener {
             }
         }*/
     }
+
     @EventHandler
     public void onThunderChange(final ThunderChangeEvent event) {
         /*for (Player p : ProjectKorra.plugin.getServer().getOnlinePlayers()) {
@@ -197,11 +291,12 @@ public class TweaksListener implements Listener {
             }
         }*/
     }
+
     @EventHandler
-    public void onPlayerDamage(final EntityDamageEvent event){
-        if(!TweaksListener.serverVersion16){
-            if(event.getCause().equals(EntityDamageEvent.DamageCause.FREEZE)
-                    &&IcyClaws.frozenEntities.contains(event.getEntity()))
+    public void onPlayerDamage(final EntityDamageEvent event) {
+        if (!TweaksListener.serverVersion16) {
+            if (event.getCause().equals(EntityDamageEvent.DamageCause.FREEZE)
+                    && IcyClaws.frozenEntities.contains(event.getEntity()))
                 event.setCancelled(true);
         }
     }
