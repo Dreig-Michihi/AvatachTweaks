@@ -4,7 +4,7 @@ import com.projectkorra.projectkorra.ProjectKorra;
 import com.projectkorra.projectkorra.ability.CoreAbility;
 
 public class TweaksInfo {
-    private static final String version = "AvatachTweaks V0.2.3";
+    private static final String version = "AvatachTweaks V0.2.5";
     private static final String author = "Dreig_Michihi";
 
     public static String getVersion() {
