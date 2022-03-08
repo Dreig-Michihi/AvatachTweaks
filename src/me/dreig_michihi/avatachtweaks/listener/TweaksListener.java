@@ -33,6 +33,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
+import org.bukkit.plugin.RegisteredListener;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import timingslib.projectkorra.MCTiming;
@@ -41,9 +42,8 @@ import java.util.Objects;
 
 public class TweaksListener implements Listener {
     public static boolean serverVersion16 = ProjectKorra.plugin.getServer().getVersion().contains("1.16");
-    private static double damageMod = ConfigManager.getConfig().getDouble("ExtraAbilities.Dreig_Michihi.AvatachTweaks.Earth.LavaDamageModifier");
-    private static double lavaTicksMod = ConfigManager.getConfig().getDouble("ExtraAbilities.Dreig_Michihi.AvatachTweaks.Earth.LavaTicksModifier");
-
+    private static double damageMod = ConfigManager.getConfig().getDouble("ExtraAbilities.Dreig_Michihi.AvatachTweaks.Earth.LavaDamageModifier", 1);
+    private static double lavaTicksMod = ConfigManager.getConfig().getDouble("ExtraAbilities.Dreig_Michihi.AvatachTweaks.Earth.LavaTicksModifier", 1);
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerSneak(final PlayerToggleSneakEvent event) {
@@ -150,14 +150,6 @@ public class TweaksListener implements Listener {
             }
             if (lava) {
                 event.setDamage(event.getDamage()*damageMod);
-                new BukkitRunnable(){
-                    @Override
-                    public void run() {
-                        int before = player.getFireTicks();
-                        player.setFireTicks(0);
-                        player.setFireTicks((int)(before*lavaTicksMod));
-                    }
-                }.runTaskLater(ProjectKorra.plugin,5);
             }
         }
     }

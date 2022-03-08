@@ -9,9 +9,9 @@ import org.bukkit.event.Listener;
 public class ListenerManager {
     public static Listener listener;
     public static void Register(){
+        ConfigManager.defaultConfig.get().addDefault("ExtraAbilities.Dreig_Michihi.AvatachTweaks.Earth.LavaDamageModifier", 1);
+        ConfigManager.defaultConfig.get().addDefault("ExtraAbilities.Dreig_Michihi.AvatachTweaks.Earth.LavaTicksModifier", 1);
         if (listener==null) {
-            ConfigManager.defaultConfig.get().addDefault("ExtraAbilities.Dreig_Michihi.AvatachTweaks.Earth.LavaDamageModifier", 1);
-            ConfigManager.defaultConfig.get().addDefault("ExtraAbilities.Dreig_Michihi.AvatachTweaks.Earth.LavaTicksModifier", 1);
             listener = new TweaksListener();
             Bukkit.getServer().getPluginManager().registerEvents(listener, ProjectKorra.plugin);
         }
