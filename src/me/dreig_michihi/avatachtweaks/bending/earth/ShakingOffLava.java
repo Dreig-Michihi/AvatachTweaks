@@ -128,8 +128,6 @@ public class ShakingOffLava extends LavaAbility implements ComboAbility, AddonAb
         TweaksConfig.addDefault(this, "Cooldown", 6000);
         TweaksConfig.addDefault(this, "FireResistTime", 2000);
         TweaksConfig.addDefault(this, "SneakComboAbility", "LavaFlow");
-        TweaksConfig.addDefault( this, "LavaDamageModifier",1);
-        TweaksConfig.addDefault( this, "LavaTicksModifier",1);
         TweaksConfig.saveDefaultConfig();
         radius = getConfig().getDouble(TweaksConfig.getConfigPath(this, "Radius"));
         cooldown = getConfig().getLong(TweaksConfig.getConfigPath(this, "Cooldown"));
